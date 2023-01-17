@@ -35,6 +35,7 @@ MANIFEST
 *.manifest
 *.spec
 Pipfile.lock
+config.json
 
 # Installer logs
 pip-log.txt
