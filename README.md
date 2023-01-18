@@ -2,7 +2,7 @@
 
 - **Integrantes**:
     - Asier Ochoa 1101331
-    - (nombre)
+    - David Quezada 1066865
     - (nombre)
     - (nombre)
 
