@@ -34,13 +34,17 @@ class Configurator:
             with open("config.json", "w") as f:
                 json.dump(config_template, f, indent=4)
                 print("Warning: Generated missing config.json, please fill it out and relaunch the program")
+                exit(0)
 
         with open("config.json", "r") as f:
             conf_dict: dict = json.load(f)
-            if any([x == "" for x in conf_dict.values() if isinstance(x, str)]):  # recursive check required
+            conf_template_dict_keys = [a for a in config_template["mariadb"].keys()] + [a for a in config_template["server"].keys()]
+
+            if any([x == "" for x in [a for a in conf_dict["mariadb"].values()] + [a for a in conf_dict["server"].values()] if isinstance(x, str)]):
                 print("Error: Empty values in config.json file! Exiting program")
                 exit(1)
-            if any([x not in config_template.keys() for x in conf_dict.keys()]):
+
+            if any([x not in [a for a in conf_dict["mariadb"].keys()] + [a for a in conf_dict["server"].keys()] for x in conf_template_dict_keys]):
                 print("Error: Missing keys in config.json file! Exiting program")
                 exit(1)
 
