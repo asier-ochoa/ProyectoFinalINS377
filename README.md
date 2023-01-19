@@ -3,7 +3,7 @@
 - **Integrantes**:
     - Asier Ochoa 1101331
     - David Quezada 1066865
-    - (nombre)
+    - Abraham Abreu 1099026
     - (nombre)
 
 ## Como instalar:
