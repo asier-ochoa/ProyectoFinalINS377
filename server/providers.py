@@ -13,6 +13,20 @@ def get_content_types(cursor: Cursor) -> list[dict]:
     return rows_to_dict(cursor, cursor.fetchall())
 
 
+def search_tags(query: str, cursor: Cursor) -> list[dict]:
+    query = f"%{query.replace('%', '').replace('_', '')}%"
+    cursor.execute(
+        """
+        SELECT * FROM Category_tags
+        WHERE name LIKE ?
+        ORDER BY name
+        LIMIT 10
+        """,
+        [query]
+    )
+    return rows_to_dict(cursor, cursor.fetchall())
+
+
 class SpaceProvider:
     def __init__(self, company_name, email, iban):
         self.company_name: str = company_name
@@ -22,8 +36,8 @@ class SpaceProvider:
     def submit(self, cursor: Cursor):
         cursor.execute(
             """
-            INSERT INTO Space_provider(company_name, contact_email, payment_account_iban)
-            VALUES(?, ?, ?)
+            INSERT INTO Space_provider(company_name, contact_email, payment_account_iban, payment_interval)
+            VALUES(?, ?, ?, 14)
             """,
             [self.company_name, self.email, self.iban]
         )

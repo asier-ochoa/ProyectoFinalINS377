@@ -3,7 +3,7 @@ from mariadb import IntegrityError
 
 from tools import db_connect, EntityNotFoundException, DuplicatedEntityException
 from configuration import config
-from providers import AdProvider, get_content_types as db_content_types
+from providers import AdProvider, get_content_types as db_content_types, search_tags as db_tags
 
 provider_api_routes = Blueprint("provider_routes", __name__, url_prefix='/provider')
 
@@ -27,6 +27,20 @@ def handle_missing_entity(e):
 def get_content_types():
     with db_connect() as conn:
         return jsonify(db_content_types(conn.cursor())), 200
+
+
+@provider_api_routes.get('/tag')
+def search_tags():
+    """
+    Request Body:
+    {
+      "query": str
+    }
+    """
+    body: dict = request.get_json(force=True)
+
+    with db_connect() as conn:
+        return jsonify(db_tags(body.get('query'), conn.cursor())), 200
 
 
 @provider_api_routes.post("/ad/create")
