@@ -106,8 +106,28 @@ class AdProvider:
         )
 
     def list_ads(self, cursor: Cursor):
+        # Gather provider data by getting all ads with tags
         cursor.execute(
             """
-            SELECT * FROM Ads where provider_id=?
-            """
+            SELECT Ads.id as ad_id, Ads.name, type.type, content_route, redirect_url, Ct.name as tag, Ct.id as tag_id FROM Ads
+            JOIN `Space&Ad_type` type on type.id = Ads.type
+            LEFT JOIN Ad_categories cats on cats.ad_id = Ads.id
+            LEFT JOIN Category_tags Ct on cats.category_tag = Ct.id
+            WHERE provider_id=?
+            """,
+            [self.p_id]
         )
+        tags_with_ads = rows_to_dict(cursor, cursor.fetchall())
+        if len(tags_with_ads) == 0:
+            raise EntityNotFoundException(f"Could not find ad provider with id {self.p_id}")
+
+        ret = {}
+        for r in tags_with_ads:
+            if ret.get(r['ad_id']) is None:
+                ret[r['ad_id']] = r
+                ret[r['ad_id']]['tag'] = [{'name': r['tag'], 'id': r['tag_id']}] if r['tag'] is not None else []
+                ret[r['ad_id']].pop('tag_id')
+            else:
+                ret[r['ad_id']]['tag'].append({'name': r['tag'], 'id': r['tag_id']})
+
+        return [r for r in ret.values()]

@@ -97,3 +97,9 @@ def post_ad(p_id):
         ad_provider.create_ad(**body, provider_id=p_id, cursor=conn.cursor())
 
     return jsonify({"response": "OK"}), 200
+
+@provider_api_routes.get("/ad/<p_id>/list-ads")
+def list_ads(p_id):
+    with db_connect() as conn:
+        ad_provider = AdProvider.provider_factory_id(p_id, conn.cursor())
+        return ad_provider.list_ads(conn.cursor())
