@@ -3,6 +3,16 @@ from tools import rows_to_dict, DuplicatedEntityException, EntityNotFoundExcepti
 import tools
 
 
+# Gather list of available content types
+def get_content_types(cursor: Cursor) -> list[dict]:
+    cursor.execute(
+        """
+        SELECT id, type as content_type FROM `Space&Ad_type`
+        """
+    )
+    return rows_to_dict(cursor, cursor.fetchall())
+
+
 class SpaceProvider:
     def __init__(self, company_name, email, iban):
         self.company_name: str = company_name
@@ -20,9 +30,10 @@ class SpaceProvider:
 
 
 class AdProvider:
-    def __init__(self, company_name, email, p_id):
+    def __init__(self, company_name, email, p_id=None):
         self.company_name: str = company_name
         self.email: str = email
+        self.p_id: int | None = p_id
 
     @staticmethod
     def provider_factory_id(p_id: int, cursor: Cursor):
@@ -59,13 +70,7 @@ class AdProvider:
             [self.company_name, self.email]
         )
 
-    # Need to add function to set categories in aux table
-    def create_ad(self, name: str, provider_id: int, ad_type: str, content_route: str, redirect_url: str, cursor: Cursor):
-        # Get ad type id
-        ad_type_id = tools.get_content_type_id(ad_type, cursor)
-        if ad_type_id is None:
-            raise EntityNotFoundException(f"Could not find ad type with name {ad_type}")
-
+    def create_ad(self, name: str, provider_id: int, ad_type: int, content_route: str, redirect_url: str, cursor: Cursor):
         # Check if provider has ad with same name
         cursor.execute(
             """
@@ -83,7 +88,7 @@ class AdProvider:
             INSERT INTO Ads(name, provider_id, type, content_route, redirect_url)
             VALUES(?, ?, ?, ?, ?)
             """,
-            [name, provider_id, ad_type_id, content_route, redirect_url]
+            [name, provider_id, ad_type, content_route, redirect_url]
         )
 
     def list_ads(self, cursor: Cursor):

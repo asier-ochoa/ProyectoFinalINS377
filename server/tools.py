@@ -30,6 +30,7 @@ def db_connect() -> Connection | None:
                    db=db_conf.database)
 
 
+# REDUNDANT
 def get_content_type_id(ad_type: str, cursor: Cursor) -> int | None:
     cursor.execute(
         """
