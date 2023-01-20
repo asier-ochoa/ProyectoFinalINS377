@@ -98,8 +98,39 @@ def post_ad(p_id):
 
     return jsonify({"response": "OK"}), 200
 
+
 @provider_api_routes.get("/ad/<p_id>/list-ads")
 def list_ads(p_id):
     with db_connect() as conn:
         ad_provider = AdProvider.provider_factory_id(p_id, conn.cursor())
         return ad_provider.list_ads(conn.cursor())
+
+
+@provider_api_routes.post("/ad/<p_id>/<ad_id>/edit-tags")
+def edit_tags(p_id, ad_id):
+    """
+    Request body:
+    {
+      "action": str,
+      "tags": [
+        {
+          "id": int,
+          "relative_weight": int
+        }
+      ]
+    }
+    """
+    action_fields = ("add", "delete")
+    body: dict = request.get_json(force=True)
+    if body['action'] not in action_fields:
+        raise IntegrityError()
+
+    with db_connect() as conn:
+        cur = conn.cursor()
+        ad_provider = AdProvider.provider_factory_id(p_id, cur)
+        if body['action'] == "add":
+            ad_provider.add_tags(ad_id, body['tags'], cur)
+        else:
+            ad_provider.delete_tags(ad_id, body['tags'], cur)
+
+    return jsonify({"response": "OK"}), 200

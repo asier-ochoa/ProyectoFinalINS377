@@ -131,3 +131,21 @@ class AdProvider:
                 ret[r['ad_id']]['tag'].append({'name': r['tag'], 'id': r['tag_id']})
 
         return [r for r in ret.values()]
+
+    def add_tags(self, ad_id, tags: list[dict[str, int]], cursor: Cursor):
+        cursor.executemany(
+            """
+            INSERT INTO Ad_categories(ad_id, category_tag, relative_weight) 
+            VALUES (?, ?, ?)
+            """,
+            [(ad_id, t['id'], t['relative_weight']) for t in tags]
+        )
+
+    def delete_tags(self, ad_id, tags: list[dict[str, int]], cursor: Cursor):
+        cursor.executemany(
+            """
+            DELETE FROM Ad_categories
+            where ad_id=? and category_tag=?
+            """,
+            [(ad_id, t['id']) for t in tags]
+        )
