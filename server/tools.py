@@ -27,7 +27,7 @@ def rows_to_dict(cursor: Cursor, table: list[Iterable] | Iterable) -> list[dict[
 def db_connect() -> Connection | None:
     db_conf = config.mariadb
     return connect(host=db_conf.host, port=db_conf.port, user=db_conf.user, passwd=db_conf.password,
-                   db=db_conf.database)
+                   db=db_conf.database, autocommit=True)
 
 
 # REDUNDANT
