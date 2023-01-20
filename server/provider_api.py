@@ -1,28 +1,28 @@
 from flask import Blueprint, request, jsonify
-from tools import db_connect, DuplicatedEntityException, EntityNotFoundException
+from tools import db_connect, EntityNotFoundException, DuplicatedEntityException
 from configuration import config
-from providers import AdProvider
+from providers import AdProvider, get_content_types as db_content_types
 
-api_routes = Blueprint("routes", __name__)
+provider_api_routes = Blueprint("provider_routes", __name__, url_prefix='/provider')
 
 
-@api_routes.errorhandler(DuplicatedEntityException)
+@provider_api_routes.errorhandler(DuplicatedEntityException)
 def handle_duplicated_entity(e):
     return jsonify({"response": f"Error: {e}"}), 422
 
 
-@api_routes.errorhandler(EntityNotFoundException)
+@provider_api_routes.errorhandler(EntityNotFoundException)
 def handle_missing_entity(e):
     return jsonify({"response": f"Error: {e}"}), 404
 
 
-@api_routes.get("/db_status")
-def get_db_status():
-    db_conn = db_connect()
-    return db_conn.server_info, 200
+@provider_api_routes.get('/content-type')
+def get_content_types():
+    conn = db_connect()
+    return jsonify(db_content_types(conn.cursor())), 200
 
 
-@api_routes.post("/ad_provider/create")
+@provider_api_routes.post("/ad/create")
 def post_ad_provider():
     """
     Request Body:
@@ -41,7 +41,7 @@ def post_ad_provider():
     return jsonify({"response": "OK"}), 200
 
 
-@api_routes.get("/ad_provider/get")
+@provider_api_routes.get("/ad/get")
 def get_ad_provider():
     """
     Request Body:
@@ -56,18 +56,25 @@ def get_ad_provider():
     if ret is None:
         raise EntityNotFoundException("Company with name {body['company_name']} could not be found!")
 
-    return ret, 200
+    return jsonify(ret), 200
 
 
-@api_routes.post("/ad_provider/<p_id>/create_ad")
+@provider_api_routes.post("/ad/<p_id>/create-ad")
 def post_ad(p_id):
     """
     Request Body:
+    {
+        "name": str,
+        "ad_type": int,
+        "content_route": str,
+        "redirect_url": str
+    }
     """
     body: dict = request.get_json(force=True)
 
     conn = db_connect()
     ad_provider = AdProvider.provider_factory_id(p_id, conn.cursor())  # Find provider using id
-    ad_provider.create_ad(**body, cursor=conn.cursor())
+    ad_provider.create_ad(**body, provider_id=p_id, cursor=conn.cursor())
+    conn.commit()
 
     return jsonify({"response": "OK"}), 200
