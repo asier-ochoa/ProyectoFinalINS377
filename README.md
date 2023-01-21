@@ -4,8 +4,8 @@
     - Asier Ochoa 1101331
     - David Quezada 1066865
     - Abraham Abreu 1099026
-    - (nombre)
-
+ -Lik Liang 1103310
+ 
 ## Como instalar:
 ### Requerimientos:
 - Python 3.10
